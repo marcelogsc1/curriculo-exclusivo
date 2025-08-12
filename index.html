@@ -12,32 +12,29 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  /* Importante: permitir rolagem horizontal/vertical no body */
-  body{margin:0; background:
-      radial-gradient(1600px 800px at 50% -10%, rgba(47,90,58,.28), transparent 65%),
-      linear-gradient(180deg, #0a0e11, #12171b 50%, #0a0e11);
-    font-family: ui-serif, Georgia, "Times New Roman", serif; color:#f3efe3;
-    overflow:auto; overflow-x:auto; scrollbar-gutter:stable both-edges}
+  /* Permitir rolagem horizontal/vertical no body (barra inferior quando necessário) */
+  body{margin:0; font-family: ui-serif, Georgia, "Times New Roman", serif; color:#f3efe3;
+       overflow:auto; overflow-x:auto; scrollbar-gutter:stable both-edges}
 
-  /* Madeira de fundo fixa (não rola) */
-  .table{position:fixed; inset:0; z-index:0; 
   /* Fundo com imagem fixa (por trás do livro) */
-  background: url('https://i.imgur.com/AkkS7kq.png') center/cover no-repeat fixed;}
-.table::after{content:""; position:absolute; inset:0; pointer-events:none;
-  /* Vignette sutil para dar profundidade */
-  background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(0,0,0,.28), transparent 65%),
-    linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.6));}
+  .table{position:fixed; inset:0; z-index:0;
+    background:url('https://i.imgur.com/AkkS7kq.png') center/cover no-repeat fixed;}
+  .table::after{content:""; position:absolute; inset:0; pointer-events:none;
+    /* Vignette sutil para dar profundidade */
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(0,0,0,.28), transparent 65%),
+      linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));}
 
   /* Quadro do livro: largura fixa para garantir layout e permitir rolagem lateral */
-  .frame{position:relative; width:1366px; height:860px; margin:clamp(16px, calc(50vh - 430px), 140px) auto 40px; z-index:1}
+  .frame{position:relative; width:1366px; height:980px; margin:clamp(24px, calc(50vh - 490px), 160px) auto 48px; z-index:1}
   @media (min-width:1700px){ .frame{transform:scale(1.05); transform-origin:top center} }
-  @media (max-height:760px){ .frame{height:920px} }
+  @media (max-height:760px){ .frame{height:1040px} }
 
   .book{position:absolute; inset:0; display:grid; grid-template-columns:420px 1fr; gap:0; border-radius:18px;
     box-shadow:0 30px 90px rgba(0,0,0,.6), inset 0 2px 1px rgba(255,255,255,.08);
     background:linear-gradient(90deg, rgba(0,0,0,.35), transparent 46%, transparent 54%, rgba(0,0,0,.35))}
   .page{position:relative; overflow:hidden; padding:18px}
+  .page.right{overflow:auto} /* garante que o lado direito role por dentro, evitando cortes */
   .left{background:
       linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.18)),
       linear-gradient(180deg, #f2ead4, #e6dbbd)}
@@ -47,13 +44,13 @@
   .gutter{position:absolute; left:calc(50% - 8px); top:0; width:16px; height:100%; background:
       linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.7)); box-shadow: inset 0 0 0 2px rgba(0,0,0,.2)}
 
-  .titlebar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px; margin:0 0 12px 0;
+  .titlebar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; margin:0 0 14px 0;
     border:1px solid rgba(0,0,0,.12); border-radius:12px; background:linear-gradient(180deg,#f9f2dd,#eadfbe); color:#2a302e;
     box-shadow:0 4px 10px rgba(0,0,0,.08)}
-  .titlebar h1{margin:0; font-size:18px; letter-spacing:.5px}
+  .titlebar h1{margin:0; font-size:20px; letter-spacing:.5px}
   /* Título do topo (nome + cargo) maior */
-  .nameTitle{font-size:28px; letter-spacing:.8px; font-weight:800}
-  .roleTop{font-size:14px; color:#3a4a42; font-weight:600}
+  .nameTitle{font-size:32px; letter-spacing:.8px; font-weight:800}
+  .roleTop{font-size:15px; color:#3a4a42; font-weight:600}
   .subtitle{font-size:12px; color:#4f574f}
   .btn{appearance:none; border:1px solid rgba(0,0,0,.18); background:linear-gradient(180deg,#fff9e7,#e7dbbb);
        color:#2a2e2a; border-radius:10px; padding:6px 10px; cursor:pointer; font-size:12px}
@@ -70,15 +67,17 @@
   .bio .name{font-weight:700; color:#28302c}
   .bio .role{font-size:12px; color:#4a524d}
 
-  .tabs{display:flex; gap:6px; padding:8px; border:1px solid rgba(0,0,0,.12); border-radius:12px; background:linear-gradient(180deg,#f9f1db,#eadfbe); margin-bottom:10px}
-  .tab{padding:8px 12px; font-size:13px; border-radius:10px; border:1px solid rgba(0,0,0,.14); cursor:pointer; color:#26302a; background:linear-gradient(180deg,#fff9e7,#e9dbb9)}
+  /* Tabs maiores e mais compridas para acompanhar a barra de título */
+  .tabs{display:flex; gap:8px; padding:10px 10px; border:1px solid rgba(0,0,0,.12); border-radius:12px; background:linear-gradient(180deg,#f9f1db,#eadfbe); margin-bottom:12px}
+  .tab{padding:10px 14px; font-size:14px; border-radius:10px; border:1px solid rgba(0,0,0,.14); cursor:pointer; color:#26302a; background:linear-gradient(180deg,#fff9e7,#e9dbb9)}
   .tab[aria-selected="true"]{box-shadow:0 0 0 2px var(--leaf-soft) inset; border-color:#7aa084}
 
-  .content{height:calc(100% - 74px); overflow:auto; padding:4px 2px}
+  /* Aumentei a altura reservada ao conteúdo para evitar cortes no fim */
+  .content{height:calc(100% - 132px); overflow:auto; padding:6px 4px}
   .section{display:none} .section.active{display:block}
 
-  .card{border:1px solid rgba(0,0,0,.12); border-radius:12px; padding:12px; background:linear-gradient(180deg,#f7f0dd,#e7dbb9); color:#2a2e2a; box-shadow:0 4px 10px rgba(0,0,0,.06)}
-  .card h3{margin:2px 0 10px 0; font-size:15px; color:#1f2a22; display:flex; align-items:center; gap:8px}
+  .card{border:1px solid rgba(0,0,0,.12); border-radius:12px; padding:14px; background:linear-gradient(180deg,#f7f0dd,#e7dbb9); color:#2a2e2a; box-shadow:0 4px 10px rgba(0,0,0,.06)}
+  .card h3{margin:2px 0 12px 0; font-size:16px; color:#1f2a22; display:flex; align-items:center; gap:8px}
   .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
   .list{display:grid; gap:8px}
   .row{display:flex; justify-content:space-between; gap:12px; padding:8px 10px; border:1px solid #c6ccb8; border-radius:10px; background:#f4eed9}
@@ -89,16 +88,18 @@
   .bar > span{display:block; height:100%; border-radius:8px; background:linear-gradient(90deg, #7aa084, #274732)}
   .badge{padding:4px 8px; border-radius:8px; background:#e4f1e8; border:1px solid #c6e0d0; font-size:12px; color:#2b4c38}
 
-  .timeline{position:relative; padding-left:20px; display:grid; gap:10px}
-  .timeline::before{content:""; position:absolute; left:8px; top:0; bottom:0; width:2px; background:linear-gradient(#7aa084,#47525f)}
-  .t-item{position:relative; padding-left:8px}
-  .t-item::before{content:""; position:absolute; left:-6px; top:.4em; width:10px; height:10px; border-radius:50%; background:var(--moss); box-shadow:0 0 0 2px #cfe3d6}
-  .t-title{font-weight:700}
+  /* Linha do tempo maior/mais legível */
+  .timeline{position:relative; padding-left:22px; display:grid; gap:14px}
+  .timeline::before{content:""; position:absolute; left:8px; top:0; bottom:0; width:3px; background:linear-gradient(#7aa084,#47525f)}
+  .t-item{position:relative; padding-left:10px}
+  .t-item::before{content:""; position:absolute; left:-7px; top:.35em; width:12px; height:12px; border-radius:50%; background:var(--moss); box-shadow:0 0 0 2px #cfe3d6}
+  .t-title{font-weight:800; font-size:18px}
+  .t-item li{font-size:14px; line-height:1.45}
 
   .footer{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0}
 
   /* HUD esverdeado, estilo menu de criação */
-  .hud{position:fixed; inset:0; display:none; place-items:center; 
+  .hud{position:fixed; inset:0; display:none; place-items:center;
       background:
         radial-gradient(1400px 800px at 50% -10%, rgba(46,136,86,.55), rgba(12,32,24,.85) 70%),
         linear-gradient(180deg, rgba(18,54,40,.85), rgba(10,28,20,.95));
@@ -109,7 +110,7 @@
         linear-gradient(90deg, transparent 0 96%, rgba(255,255,255,.06) 96%);
       background-size: 40px 40px, 40px 40px; opacity:.35}
   .hud.show{display:grid}
-  .hud-card{width:min(1040px,96vw); border-radius:20px; 
+  .hud-card{width:min(1040px,96vw); border-radius:20px;
       border:1px solid rgba(48,120,84,.45); padding:18px; background:
       radial-gradient(1200px 600px at 20% -10%, rgba(255,255,255,.18), transparent 60%),
       linear-gradient(180deg, #e2f5e9, #cfe8da);
@@ -144,10 +145,10 @@
           <div class="avatar">
             <!-- ==========================================================
                  🔰 IMAGEM FIXA DO PERSONAGEM (ONLINE)
-                 Use um link DIRETO do Imgur/PNG/JPG/WebP. Exemplo abaixo.
+                 Use um link DIRETO do Imgur/PNG/JPG/WebP. Substitua a URL abaixo se desejar.
             =========================================================== -->
             <img id="avatarImg" alt="Marcelo Saavedra — retrato"
-                 src="https://i.imgur.com/BWVNCvy.png" loading="eager" crossorigin="anonymous"/>
+                 src="https://i.imgur.com/EqHBI4w.png" loading="eager" crossorigin="anonymous"/>
           </div>
         </div>
         <div class="bio">
@@ -162,7 +163,7 @@
     <div class="page right">
       <div class="titlebar">
         <div>
-          <h1>Ficha do Herói</h1>
+          <h1>Ficha do trabalhador</h1>
           <div class="subtitle">Ajuste as páginas como em um RPG de mesa</div>
         </div>
         <div class="muted">Atalhos: 1 Atributos · 2 Habilidades · 3 Conquistas · 4 História · H HUD · M Música</div>
@@ -258,7 +259,8 @@
   const CV = {
     conquistas:[
       'Mais de 12 mil seguidores e ~5 mil cliques mensais em CTAs — Emitte',
-      'Média de ~500 leads ICP High Ticket por mês (conteúdo + funil) — Emitte'
+      'Média de ~500 leads ICP High Ticket por mês (conteúdo + funil) — Emitte',
+      'Apoio no lançamento de produto e produção de todos os materiais — Pontua'
     ],
     experiencias:[
       { cargo:'Analista de Conteúdo Sênior', org:'Emitte / Emitte Contábil', periodo:'Out/2021 – atual', itens:[
