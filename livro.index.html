@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Livro RPG — Marcelo Saavedra, o mago do conteúdo</title>
+<style>
+  :root{
+    /* Paleta natureza (verde, pedra, madeira) */
+    --wood:#5b4631; --wood-deep:#3f3225; --leaf:#2f5a3a; --leaf-soft:#3f7a50; --moss:#274732;
+    --stone:#47525f; --slate:#1c232b; --mint:#dfe8e3; --gold:#c7a262;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  /* Importante: permitir rolagem horizontal/vertical no body */
+  body{margin:0; background:
+      radial-gradient(1600px 800px at 50% -10%, rgba(47,90,58,.28), transparent 65%),
+      linear-gradient(180deg, #0a0e11, #12171b 50%, #0a0e11);
+    font-family: ui-serif, Georgia, "Times New Roman", serif; color:#f3efe3;
+    overflow:auto; overflow-x:auto; scrollbar-gutter:stable both-edges}
+
+  /* Madeira de fundo fixa (não rola) */
+  .table{position:fixed; inset:0; z-index:0; 
+  /* Fundo com imagem fixa (por trás do livro) */
+  background: url('https://i.imgur.com/AkkS7kq.png') center/cover no-repeat fixed;}
+.table::after{content:""; position:absolute; inset:0; pointer-events:none;
+  /* Vignette sutil para dar profundidade */
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(0,0,0,.28), transparent 65%),
+    linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.6));}
+
+  /* Quadro do livro: largura fixa para garantir layout e permitir rolagem lateral */
+  .frame{position:relative; width:1366px; height:860px; margin:clamp(16px, calc(50vh - 430px), 140px) auto 40px; z-index:1}
+  @media (min-width:1700px){ .frame{transform:scale(1.05); transform-origin:top center} }
+  @media (max-height:760px){ .frame{height:920px} }
+
+  .book{position:absolute; inset:0; display:grid; grid-template-columns:420px 1fr; gap:0; border-radius:18px;
+    box-shadow:0 30px 90px rgba(0,0,0,.6), inset 0 2px 1px rgba(255,255,255,.08);
+    background:linear-gradient(90deg, rgba(0,0,0,.35), transparent 46%, transparent 54%, rgba(0,0,0,.35))}
+  .page{position:relative; overflow:hidden; padding:18px}
+  .left{background:
+      linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.18)),
+      linear-gradient(180deg, #f2ead4, #e6dbbd)}
+  .right{background:
+      linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.18)),
+      linear-gradient(180deg, #f2ead4, #e6dbbd)}
+  .gutter{position:absolute; left:calc(50% - 8px); top:0; width:16px; height:100%; background:
+      linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.7)); box-shadow: inset 0 0 0 2px rgba(0,0,0,.2)}
+
+  .titlebar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 12px; margin:0 0 12px 0;
+    border:1px solid rgba(0,0,0,.12); border-radius:12px; background:linear-gradient(180deg,#f9f2dd,#eadfbe); color:#2a302e;
+    box-shadow:0 4px 10px rgba(0,0,0,.08)}
+  .titlebar h1{margin:0; font-size:18px; letter-spacing:.5px}
+  /* Título do topo (nome + cargo) maior */
+  .nameTitle{font-size:28px; letter-spacing:.8px; font-weight:800}
+  .roleTop{font-size:14px; color:#3a4a42; font-weight:600}
+  .subtitle{font-size:12px; color:#4f574f}
+  .btn{appearance:none; border:1px solid rgba(0,0,0,.18); background:linear-gradient(180deg,#fff9e7,#e7dbbb);
+       color:#2a2e2a; border-radius:10px; padding:6px 10px; cursor:pointer; font-size:12px}
+  .btn:hover{filter:brightness(1.05)}
+  .btn[aria-pressed="true"]{box-shadow:0 0 0 2px var(--leaf-soft) inset}
+
+  .portrait{display:grid; grid-template-rows:1fr auto; gap:12px; height:calc(100% - 110px)}
+  .portrait-plate{position:relative; border:1px solid rgba(0,0,0,.15); border-radius:14px; overflow:hidden; background:
+      radial-gradient(900px 350px at 50% -10%, rgba(74,112,86,.18), transparent 70%),
+      linear-gradient(180deg, #eef2e9, #dfe7d7)}
+  .avatar{position:absolute; inset:0; display:grid; place-items:center; padding:12px}
+  .avatar img{max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 14px 28px rgba(0,0,0,.35))}
+  .bio{border:1px solid rgba(0,0,0,.12); border-radius:12px; padding:10px; background:linear-gradient(180deg,#f5efdd,#e8dcbb)}
+  .bio .name{font-weight:700; color:#28302c}
+  .bio .role{font-size:12px; color:#4a524d}
+
+  .tabs{display:flex; gap:6px; padding:8px; border:1px solid rgba(0,0,0,.12); border-radius:12px; background:linear-gradient(180deg,#f9f1db,#eadfbe); margin-bottom:10px}
+  .tab{padding:8px 12px; font-size:13px; border-radius:10px; border:1px solid rgba(0,0,0,.14); cursor:pointer; color:#26302a; background:linear-gradient(180deg,#fff9e7,#e9dbb9)}
+  .tab[aria-selected="true"]{box-shadow:0 0 0 2px var(--leaf-soft) inset; border-color:#7aa084}
+
+  .content{height:calc(100% - 74px); overflow:auto; padding:4px 2px}
+  .section{display:none} .section.active{display:block}
+
+  .card{border:1px solid rgba(0,0,0,.12); border-radius:12px; padding:12px; background:linear-gradient(180deg,#f7f0dd,#e7dbb9); color:#2a2e2a; box-shadow:0 4px 10px rgba(0,0,0,.06)}
+  .card h3{margin:2px 0 10px 0; font-size:15px; color:#1f2a22; display:flex; align-items:center; gap:8px}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .list{display:grid; gap:8px}
+  .row{display:flex; justify-content:space-between; gap:12px; padding:8px 10px; border:1px solid #c6ccb8; border-radius:10px; background:#f4eed9}
+  .muted{opacity:.9; font-size:12px; color:#4a524d}
+
+  .attr{display:grid; grid-template-columns: 200px 1fr 54px; gap:10px; align-items:center}
+  .bar{height:10px; border-radius:8px; background:linear-gradient(90deg, #cfd8cc, #b9c7b8)}
+  .bar > span{display:block; height:100%; border-radius:8px; background:linear-gradient(90deg, #7aa084, #274732)}
+  .badge{padding:4px 8px; border-radius:8px; background:#e4f1e8; border:1px solid #c6e0d0; font-size:12px; color:#2b4c38}
+
+  .timeline{position:relative; padding-left:20px; display:grid; gap:10px}
+  .timeline::before{content:""; position:absolute; left:8px; top:0; bottom:0; width:2px; background:linear-gradient(#7aa084,#47525f)}
+  .t-item{position:relative; padding-left:8px}
+  .t-item::before{content:""; position:absolute; left:-6px; top:.4em; width:10px; height:10px; border-radius:50%; background:var(--moss); box-shadow:0 0 0 2px #cfe3d6}
+  .t-title{font-weight:700}
+
+  .footer{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0}
+
+  /* HUD esverdeado, estilo menu de criação */
+  .hud{position:fixed; inset:0; display:none; place-items:center; 
+      background:
+        radial-gradient(1400px 800px at 50% -10%, rgba(46,136,86,.55), rgba(12,32,24,.85) 70%),
+        linear-gradient(180deg, rgba(18,54,40,.85), rgba(10,28,20,.95));
+      backdrop-filter: blur(2px) saturate(1.2); z-index:2}
+  .hud::before{content:""; position:absolute; inset:0; pointer-events:none;
+      background:
+        linear-gradient(transparent 0 96%, rgba(255,255,255,.06) 96%),
+        linear-gradient(90deg, transparent 0 96%, rgba(255,255,255,.06) 96%);
+      background-size: 40px 40px, 40px 40px; opacity:.35}
+  .hud.show{display:grid}
+  .hud-card{width:min(1040px,96vw); border-radius:20px; 
+      border:1px solid rgba(48,120,84,.45); padding:18px; background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(255,255,255,.18), transparent 60%),
+      linear-gradient(180deg, #e2f5e9, #cfe8da);
+    color:#0f261c; box-shadow:0 50px 120px rgba(12,40,24,.65), 0 0 0 2px rgba(60,140,100,.15) inset}
+  .hud-head{display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid rgba(0,0,0,.12); padding-bottom:10px}
+  .hud-title{font-size:20px}
+  .hud-body{display:grid; grid-template-columns: 320px 1fr; gap:14px; padding-top:12px}
+  .close{cursor:pointer; border:1px solid rgba(0,0,0,.18); background:linear-gradient(180deg,#f7fbf8,#e2f0ea); padding:8px 12px; border-radius:10px}
+  .ribbon{position:relative; display:inline-block; background:linear-gradient(180deg,#7aa084,#274732); color:#f4f3e8; padding:6px 12px; border-radius:8px}
+  .ribbon::after{content:""; position:absolute; right:-12px; top:0; width:12px; height:100%; background:linear-gradient(180deg,#274732,#1c3a28); clip-path:polygon(0 0, 100% 50%, 0 100%)}
+
+  .ico{width:16px; height:16px; display:inline-block}
+</style>
+</head>
+<body>
+<div class="table"></div>
+<div class="frame">
+  <div class="book">
+    <div class="page left">
+      <div class="titlebar">
+        <div>
+          <h1 class="nameTitle">Marcelo Saavedra</h1>
+          <div class="subtitle roleTop">Copywriter Sênior • Estrategista de Conteúdo</div>
+        </div>
+        <div>
+          <button class="btn" id="btnMusic" aria-pressed="true" title="M">Música: ON</button>
+          <button class="btn" id="btnHUD" title="H">Abrir HUD</button>
+        </div>
+      </div>
+      <div class="portrait">
+        <div class="portrait-plate">
+          <div class="avatar">
+            <!-- ==========================================================
+                 🔰 IMAGEM FIXA DO PERSONAGEM (ONLINE)
+                 Use um link DIRETO do Imgur/PNG/JPG/WebP. Exemplo abaixo.
+            =========================================================== -->
+            <img id="avatarImg" alt="Marcelo Saavedra — retrato"
+                 src="https://i.imgur.com/BWVNCvy.png" loading="eager" crossorigin="anonymous"/>
+          </div>
+        </div>
+        <div class="bio">
+          <div class="name">Marcelo Saavedra</div>
+          <div class="role">Copywriter Sênior • Estrategista de Conteúdo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gutter" aria-hidden="true"></div>
+
+    <div class="page right">
+      <div class="titlebar">
+        <div>
+          <h1>Ficha do Herói</h1>
+          <div class="subtitle">Ajuste as páginas como em um RPG de mesa</div>
+        </div>
+        <div class="muted">Atalhos: 1 Atributos · 2 Habilidades · 3 Conquistas · 4 História · H HUD · M Música</div>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-tab="stats">Atributos</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="skills">Habilidades</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="achv">Conquistas</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="story">História</button>
+      </nav>
+      <div class="content">
+        <section id="tab-stats" class="section active">
+          <div class="grid-2">
+            <div class="card">
+              <h3><svg class="ico" viewBox="0 0 24 24"><path fill="#274732" d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/></svg> Atributos centrais</h3>
+              <div class="list" id="attrs"></div>
+              <div class="muted" style="margin-top:6px">Valores definidos com base no currículo.</div>
+            </div>
+            <div class="card">
+              <h3><svg class="ico" viewBox="0 0 24 24"><path fill="#274732" d="M4 4h16v2H4zm2 4h12v2H6zm-2 4h16v2H4zm2 4h8v2H6z"/></svg> Perícias derivadas (estilo RPG)</h3>
+              <div class="list" id="derived"></div>
+            </div>
+          </div>
+        </section>
+        <section id="tab-skills" class="section">
+          <div class="card">
+            <h3><svg class="ico" viewBox="0 0 24 24"><path fill="#274732" d="M12 2l4 4-8 8-4-4z"/></svg> Competências técnicas</h3>
+            <div class="list" id="skills-tech"></div>
+          </div>
+          <div class="card" style="margin-top:10px">
+            <h3><svg class="ico" viewBox="0 0 24 24"><path fill="#274732" d="M12 12a5 5 0 110-10 5 5 0 010 10zm-7 9v-2a5 5 0 0110 0v2H5z"/></svg> Competências interpessoais</h3>
+            <div class="list" id="skills-soft"></div>
+          </div>
+          <div class="card" style="margin-top:10px">
+            <h3><svg class="ico" viewBox="0 0 24 24"><path fill="#274732" d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7zm0 9a2 2 0 100-4 2 2 0 000 4z"/></svg> Idiomas</h3>
+            <div class="list" id="langs"></div>
+          </div>
+        </section>
+        <section id="tab-achv" class="section">
+          <div class="card">
+            <h3><svg class="ico" viewBox="0 0 24 24"><path fill="#274732" d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/></svg> Conquistas registradas</h3>
+            <div class="list" id="achievements"></div>
+          </div>
+        </section>
+        <section id="tab-story" class="section">
+          <div class="card">
+            <h3><svg class="ico" viewBox="0 0 24 24"><path fill="#274732" d="M3 4h18v2H3zm0 4h12v2H3zm0 4h18v2H3zm0 4h12v2H3z"/></svg> Linha do tempo</h3>
+            <div class="timeline" id="timeline"></div>
+          </div>
+          <div class="card" style="margin-top:10px">
+            <h3><svg class="ico" viewBox="0 0 24 24"><path fill="#274732" d="M4 4h16v14H4zM2 20h20v2H2z"/></svg> Cursos & Formação</h3>
+            <div class="list" id="courses"></div>
+          </div>
+        </section>
+      </div>
+      <div class="footer">
+        <span class="muted">HUD ampliado com visão geral do personagem</span>
+        <div><button class="btn" id="btnExport">Exportar ficha</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hud" id="hud">
+  <div class="hud-card">
+    <div class="hud-head">
+      <div class="hud-title"><span class="ribbon">HUD — Marcelo Saavedra</span></div>
+      <button class="close" id="btnCloseHUD">Fechar</button>
+    </div>
+    <div class="hud-body">
+      <div>
+        <div id="hudPortrait" style="display:grid; place-items:center; margin-bottom:10px"></div>
+        <div class="badge" id="hudTag">Copywriter Sênior • Estrategista</div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:8px">
+          <h3>Atributos</h3>
+          <div class="list" id="hudAttrs"></div>
+        </div>
+        <div class="card">
+          <h3>Perícias & Destaques</h3>
+          <div class="list" id="hudSkills"></div>
+        </div>
+      </div>
+    </div>
+    <div class="muted" style="padding-top:6px">H para fechar • M para música</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ===== Dados do currículo =====
+  const CV = {
+    conquistas:[
+      'Mais de 12 mil seguidores e ~5 mil cliques mensais em CTAs — Emitte',
+      'Média de ~500 leads ICP High Ticket por mês (conteúdo + funil) — Emitte'
+    ],
+    experiencias:[
+      { cargo:'Analista de Conteúdo Sênior', org:'Emitte / Emitte Contábil', periodo:'Out/2021 – atual', itens:[
+        'Planejamento de conteúdo (funil completo).',
+        'Copy para anúncios, LPs, e-mails e materiais ricos.',
+        'Roteiros para YouTube e VSL; artigos e SEO.',
+        'Análise de dados (GA4, Search Console, Semrush)'
+      ]},
+      { cargo:'Copywriter Freelancer', org:'Pontua', periodo:'Ago/2024 – Mai/2025', itens:[
+        'Autoridade e conversão, fluxos de e-mails e LPs.', 'E-books e campanhas sazonais.'
+      ]},
+      { cargo:'Assistente de Marketing', org:'Compartilha Club', periodo:'Jan – Out/2021', itens:[
+        'Conteúdos institucionais e redes sociais.', 'Suporte a campanhas e relatórios.'
+      ]}
+    ],
+    cursos:[ 'Marketing Digital (Uninter) — em andamento', 'Growth Hacking — Alura', 'Google Analytics 4 — Alura', 'SEO: estratégias e ferramentas — Alura', 'Inbound Marketing — Rock University', 'Produção de Conteúdo para Web — Rock University' ],
+    skillsTech:[ 'Domínio de IAs generativas e agentes', 'Roteirização para VEO3', 'Análise de dados (GA4, GSC, Semrush)', 'HubSpot, RD Station e automações', 'Copy para redes e Inbound', 'SEO e escrita para Web' ],
+    skillsSoft:[ 'Organização e pontualidade', 'Criação de novas ideias', 'Abertura a feedbacks', 'Trabalho em equipe', 'Apresentação e comunicação' ],
+    idiomas:['Inglês (avançado)', 'Espanhol (intermediário)']
+  };
+
+  // ===== Atributos =====
+  const ATTRS = [ ['Criatividade',9], ['Escrita',10], ['Trabalho em equipe',8], ['Prazos',10], ['Adaptabilidade',9], ['Domínio IA',9], ['Inovação',7.9] ];
+  const DERIVED = [ ['Estratégia de Conteúdo (Épica)','+15% alcance orgânico e consistência de funil'], ['Storytelling & Narrativa (Rara)','+20% retenção em vídeo e social'], ['SEO orientado a dados (Rara)','+30% tráfego qualificado em 90 dias'], ['Automação/IA aplicada (Rara)','−35% tempo de produção, +padronização'], ['Comunicação com Stakeholders (Incomum)','alinhamento claro e roadmaps objetivos'], ['CRO & Copy de Conversão (Rara)','+12–25% taxas em LPs'], ['Gestão de Pipeline Editorial (Incomum)','cadência previsível e documentação'], ['Roteiros p/ YouTube & VSL (Rara)','melhora watch-time e CTA consciente'] ];
+
+  const el = (q)=>document.querySelector(q);
+  const tabs = document.querySelectorAll('.tab');
+  const sections = {stats:el('#tab-stats'), skills:el('#tab-skills'), achv:el('#tab-achv'), story:el('#tab-story')};
+
+  function renderAttrs(){ const wrap = el('#attrs'); wrap.innerHTML=''; ATTRS.forEach(([name,val])=>{ const pct = Math.min(100, Math.round((val/10)*100)); const row = document.createElement('div'); row.className='attr'; row.innerHTML = `<div>${name}</div><div class="bar"><span style="width:${pct}%"></span></div><div class="badge">${val}</div>`; wrap.appendChild(row); }); }
+  function renderDerived(){ el('#derived').innerHTML = DERIVED.map(([k,v])=>`<div class="row"><span><b>${k}</b></span><span class="muted">${v}</span></div>`).join(''); }
+  function fillSkills(){ el('#skills-tech').innerHTML = CV.skillsTech.map(s=>`<div class="row"><span>${s}</span></div>`).join(''); el('#skills-soft').innerHTML = CV.skillsSoft.map(s=>`<div class="row"><span>${s}</span></div>`).join(''); el('#langs').innerHTML = CV.idiomas.map(s=>`<div class="row"><span>${s}</span></div>`).join(''); }
+  function fillAchievements(){ el('#achievements').innerHTML = CV.conquistas.map(s=>`<div class="row"><span>${s}</span></div>`).join(''); }
+  function fillTimeline(){ el('#timeline').innerHTML = CV.experiencias.map(x=>`<div class="t-item"><div class="t-title">${x.cargo} — ${x.org} <span class="muted">(${x.periodo})</span></div><ul class="muted" style="margin:4px 0 0 12px">${x.itens.map(i=>`<li>${i}</li>`).join('')}</ul></div>`).join(''); el('#courses').innerHTML = CV.cursos.map(c=>`<div class="row"><span>${c}</span></div>`).join(''); }
+
+  // ===== HUD =====
+  const hud = el('#hud');
+  function openHUD(){ const hp = el('#hudPortrait'); hp.innerHTML=''; const img = document.createElement('img'); img.src = el('#avatarImg').src; img.style.maxWidth='100%'; img.style.borderRadius='12px'; img.style.boxShadow='0 10px 24px rgba(0,0,0,.25)'; hp.appendChild(img); el('#hudAttrs').innerHTML = ATTRS.map(([n,v])=>`<div class="row"><span>${n}</span><b>${v}</b></div>`).join(''); const highlights = ['Domínio de IAs generativas e agentes','Análise de dados (GA4, GSC, Semrush)','SEO e escrita para Web','CRO e Copy para LPs']; el('#hudSkills').innerHTML = highlights.map(s=>`<div class="row"><span>${s}</span></div>`).join(''); hud.classList.add('show'); }
+  function closeHUD(){ hud.classList.remove('show'); }
+  el('#btnHUD').addEventListener('click', openHUD); el('#btnCloseHUD').addEventListener('click', closeHUD);
+
+  function selectTab(id){ tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.tab===id ? 'true':'false')); Object.entries(sections).forEach(([k,sec])=>sec.classList.toggle('active', k===id)); }
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>selectTab(t.dataset.tab)));
+  window.addEventListener('keydown',(e)=>{ if(e.key==='1')selectTab('stats'); if(e.key==='2')selectTab('skills'); if(e.key==='3')selectTab('achv'); if(e.key==='4')selectTab('story'); if(e.key.toLowerCase()==='h'){ if(hud.classList.contains('show')) closeHUD(); else openHUD(); } if(e.key.toLowerCase()==='m') document.getElementById('btnMusic').click(); });
+
+  el('#btnExport').addEventListener('click', ()=>{ const data = { nome:'Marcelo Saavedra — o mago do conteúdo', titulo:'Copywriter Sênior | Estrategista de Conteúdo', attrs:ATTRS, derived:DERIVED, conquistas:CV.conquistas, skillsTech:CV.skillsTech, skillsSoft:CV.skillsSoft, idiomas:CV.idiomas, experiencias:CV.experiencias, cursos:CV.cursos }; const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ficha-marcelo-saavedra.json'; a.click(); URL.revokeObjectURL(url); });
+
+  // ===== Música LOFI sincronizada (sequenciador) =====
+  let audioCtx=null, isPlaying=false, schedulerId=null, lookahead=25, scheduleAhead=0.2; const tempo=84; const secondsPerBeat=60/tempo; let currentStep=0, nextNoteTime=0; const musicBtn=document.getElementById('btnMusic');
+  function noteFreq(n){ const m=/^([A-G])(#|b)?(\d)$/.exec(n); if(!m) return 440; const A4=440,S=Math.pow(2,1/12); const map={C:-9,D:-7,E:-5,F:-4,G:-2,A:0,B:2}; let s=map[m[1]]; if(m[2]==='#') s++; if(m[2]==='b') s--; const o=+m[3]; return A4*Math.pow(S, s+(o-4)*12); }
+  function kick(t){ const o=audioCtx.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(120,t); o.frequency.exponentialRampToValueAtTime(40,t+0.25); const g=audioCtx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.7,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.45); o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t+0.5);} 
+  function snare(t){ const b=audioCtx.createBuffer(1,audioCtx.sampleRate*0.2,audioCtx.sampleRate); const d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; const s=audioCtx.createBufferSource(); s.buffer=b; const f=audioCtx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1800; f.Q.value=0.7; const g=audioCtx.createGain(); g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.2); s.connect(f); f.connect(g); g.connect(audioCtx.destination); s.start(t);} 
+  function hat(t, v=0.08){ const b=audioCtx.createBuffer(1,audioCtx.sampleRate*0.05,audioCtx.sampleRate); const d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; const s=audioCtx.createBufferSource(); s.buffer=b; const f=audioCtx.createBiquadFilter(); f.type='highpass'; f.frequency.value=6500; const g=audioCtx.createGain(); g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05); s.connect(f); f.connect(g); g.connect(audioCtx.destination); s.start(t);} 
+  const master={bus:null,delay:null};
+  function initBuses(){ master.bus=audioCtx.createGain(); master.bus.gain.value=0.18; master.delay=audioCtx.createDelay(); master.delay.delayTime.value=0.26; const fb=audioCtx.createGain(); fb.gain.value=0.22; master.delay.connect(fb); fb.connect(master.delay); master.bus.connect(master.delay); master.delay.connect(audioCtx.destination); master.bus.connect(audioCtx.destination); const b=audioCtx.createBuffer(1,audioCtx.sampleRate*2,audioCtx.sampleRate); const d=b.getChannelData(0); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*0.03; } const src=audioCtx.createBufferSource(); src.buffer=b; src.loop=true; const fl=audioCtx.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=1000; const g=audioCtx.createGain(); g.gain.value=0.05; src.connect(fl); fl.connect(g); g.connect(audioCtx.destination); src.start(); }
+  function padChord(freqs, t, dur){ freqs.forEach(f=>{ [-8,6].forEach(det=>{ const o=audioCtx.createOscillator(); o.type='sawtooth'; o.frequency.value=f; o.detune.value=det; const g=audioCtx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.12,t+0.15); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); const lpf=audioCtx.createBiquadFilter(); lpf.type='lowpass'; lpf.frequency.setValueAtTime(1200,t); lpf.Q.value=0.7; o.connect(lpf); lpf.connect(g); g.connect(master.bus); o.start(t); o.stop(t+dur+0.05); }); }); }
+  function harp(freq, t){ const o=audioCtx.createOscillator(); o.type='triangle'; const g=audioCtx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.10,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.5); const hp=audioCtx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=250; o.frequency.value=freq*2; o.connect(hp); hp.connect(g); g.connect(master.bus); o.start(t); o.stop(t+0.52); }
+  const scale=['D4','E4','F4','G4','A4','C5','D5'];
+  const chords=[ ['D3','A3','F4'], ['Bb2','F3','D4'], ['F3','C4','A4'], ['C3','G3','E4'] ].map(ch=>ch.map(noteFreq));
+  const kickPat=[1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0];
+  const snrPat=[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0];
+  const hatPat=Array.from({length:16},(_,i)=> i%2 ? 0.08:0.06);
+  function nextNote(){ currentStep=(currentStep+1)%16; nextNoteTime += secondsPerBeat/4; }
+  function schedule(t){ const step=currentStep; if(kickPat[step]) kick(t); if(snrPat[step]) snare(t); const hv=hatPat[step]; if(hv) hat(t,hv); if(step%16===0){ const bar=Math.floor((Date.now()/1000)/(secondsPerBeat*4))%chords.length; padChord(chords[bar], t, secondsPerBeat*4.2); } if(step%2===0){ const idx=(step/2)%scale.length; harp(noteFreq(scale[idx]), t); } }
+  function scheduler(){ while(nextNoteTime < audioCtx.currentTime + scheduleAhead){ schedule(nextNoteTime); nextNote(); } schedulerId=setTimeout(scheduler, lookahead); }
+  function startMusic(){ if(isPlaying) return; if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(!master.bus) initBuses(); currentStep=15; nextNoteTime=audioCtx.currentTime+0.05; scheduler(); isPlaying=true; }
+  function stopMusic(){ if(schedulerId) clearTimeout(schedulerId); schedulerId=null; isPlaying=false; }
+  // ⬇️ Só UMA referência global para o botão — sem redeclarar
+  musicBtn.addEventListener('click', async ()=>{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') await audioCtx.resume(); if(!isPlaying){ startMusic(); musicBtn.textContent='Música: ON'; musicBtn.setAttribute('aria-pressed','true'); } else { stopMusic(); musicBtn.textContent='Música: OFF'; musicBtn.setAttribute('aria-pressed','false'); } });
+  window.addEventListener('load', async ()=>{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); try{ await audioCtx.resume(); startMusic(); }catch(e){} });
+  window.addEventListener('pointerdown', async ()=>{ if(audioCtx && audioCtx.state==='suspended'){ await audioCtx.resume(); if(!isPlaying) startMusic(); } }, {once:true});
+
+  // ===== Mini testes (debug) =====
+  function runTests(){
+    const results=[]; const test=(name,fn)=>{ try{ results.push({name, pass:!!fn()}); }catch(e){ results.push({name, pass:false, error:e.message}); } };
+    test('Existe um único botão de música', ()=> document.querySelectorAll('#btnMusic').length===1);
+    test('Variável musicBtn está definida', ()=> typeof musicBtn!== 'undefined' && musicBtn !== null);
+    test('Renderiza 7 atributos', ()=> { renderAttrs(); return document.querySelectorAll('#attrs .attr').length===7; });
+    test('4 abas disponíveis', ()=> document.querySelectorAll('.tab').length===4);
+    test('Imagem do avatar tem src', ()=> !!document.getElementById('avatarImg').getAttribute('src'));
+    test('Body permite rolagem horizontal quando necessário', ()=> document.body.scrollWidth >= document.body.clientWidth);
+    // Novos testes
+    test('Clique único alterna texto do botão Música', ()=>{ const before=musicBtn.textContent; musicBtn.click(); const after=musicBtn.textContent; musicBtn.click(); return before!==after; });
+    test('Tabs trocam a seção ativa', ()=>{ const t=document.querySelector('.tab[data-tab="skills"]'); t.click(); const on=document.querySelector('#tab-skills').classList.contains('active'); const off=!document.querySelector('#tab-stats').classList.contains('active'); return on && off; });
+    test('HUD abre e fecha sem erro', ()=>{ document.getElementById('btnHUD').click(); const open=document.getElementById('hud').classList.contains('show'); document.getElementById('btnCloseHUD').click(); const closed=!document.getElementById('hud').classList.contains('show'); return open && closed; });
+    console.table(results);
+  }
+  runTests();
+
+  // Init conteúdo
+  function init(){ renderAttrs(); renderDerived(); fillSkills(); fillAchievements(); fillTimeline(); }
+  init();
+})();
+</script>
+</body>
+</html>
